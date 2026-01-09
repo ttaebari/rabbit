@@ -1,5 +1,5 @@
 /*
- * Rabbit Animation Script V15 - Interactive Button
+ * Rabbit Animation Script V16 - Mobile Touch Support
  */
 
 const ROWS = 12;
@@ -28,9 +28,7 @@ class RabbitAnimation {
         this.cells = [];
         this.initGrid();
 
-        // Start Loop
-        // Random offset for idle blink? Not needed for now.
-        // We just run loop always to render idle state.
+        // Loop
         setInterval(() => {
             this.update();
             this.draw();
@@ -95,7 +93,7 @@ class RabbitAnimation {
     update() {
         this.tick++;
         if (this.state === this.S.IDLE) {
-            // Just wait
+            // Wait
         } else if (this.state === this.S.EMERGE) {
             if (this.tick > 12) {
                 this.state = this.S.ENTER;
@@ -109,7 +107,7 @@ class RabbitAnimation {
             }
         } else if (this.state === this.S.EAT) {
             if (this.tick > 24) {
-                this.state = this.S.IDLE; // Go back to IDLE
+                this.state = this.S.IDLE;
                 this.tick = 0;
             }
         }
@@ -191,9 +189,17 @@ const r3 = new RabbitAnimation("stage-right");
 
 // Button Control
 const btn = document.getElementById("feed-btn");
-btn.addEventListener("click", () => {
-    // Add small random delays for natural feel
+
+function handleFeed(e) {
+    if (e && e.type === "touchstart") e.preventDefault(); // Prevent double-fire on mobile
+
+    // Add small random delays
     setTimeout(() => r1.feed(), 0);
     setTimeout(() => r2.feed(), 200);
     setTimeout(() => r3.feed(), 400);
-});
+
+    // Optional: Visual feedback on button? CSS :active handles it.
+}
+
+btn.addEventListener("touchstart", handleFeed, { passive: false });
+btn.addEventListener("click", handleFeed);
