@@ -3,61 +3,19 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Rabbit Eating Carrot</title>
+        <title>Rabbit Farm</title>
         <link rel="stylesheet" href="style.css" />
     </head>
     <body>
         <div class="container">
-            <svg id="rabbit" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                <!-- Ears -->
-                <path class="ear left-ear" d="M70,80 Q60,10 80,10 Q100,10 90,80" />
-                <path class="ear right-ear" d="M130,80 Q140,10 120,10 Q100,10 110,80" />
-
-                <!-- Head -->
-                <circle class="head" cx="100" cy="120" r="50" />
-
-                <!-- Eyes -->
-                <circle class="eye left-eye" cx="80" cy="110" r="5" />
-                <circle class="eye right-eye" cx="120" cy="110" r="5" />
-
-                <!-- Cheeks (Blush) -->
-                <circle class="cheek" cx="70" cy="125" r="7" opacity="0.6" fill="#ffb7b2" />
-                <circle class="cheek" cx="130" cy="125" r="7" opacity="0.6" fill="#ffb7b2" />
-
-                <!-- Mouth Group -->
-                <g id="mouth-group" transform="translate(100, 135)">
-                    <!-- Default Mouth: o o -->
-                    <path id="mouth-idle" d="M-5,0 Q0,5 5,0" stroke-width="2" stroke-linecap="round" fill="none" />
-
-                    <!-- Chewing Mouth: > < (approximation with paths) -->
-                    <path
-                        id="mouth-chewing"
-                        d="M-6,-2 L0,2 L6,-2"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        fill="none"
-                        style="display: none"
-                    />
-
-                    <!-- Finished Mouth: ^ ^ (happy) -->
-                    <path
-                        id="mouth-finished"
-                        d="M-8,-2 Q-4,-6 0,-2 M0,-2 Q4,-6 8,-2"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        fill="none"
-                        style="display: none"
-                    />
-                </g>
-            </svg>
-
-            <div id="carrot-container">
-                <div id="carrot">🥕</div>
+            <div class="rabbit-farm">
+                <!-- Center one is main for mobile -->
+                <pre id="stage-left" class="rabbit-stage"></pre>
+                <pre id="stage-center" class="rabbit-stage"></pre>
+                <pre id="stage-right" class="rabbit-stage"></pre>
             </div>
 
-            <div class="controls">
-                <p>Click to feed!</p>
-            </div>
+            <button id="feed-btn">지현이가 먹이주기 🥕</button>
         </div>
         <script src="script.js"></script>
     </body>

@@ -1,108 +1,199 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const carrot = document.getElementById("carrot");
-    const mouthIdle = document.getElementById("mouth-idle");
-    const mouthChewing = document.getElementById("mouth-chewing");
-    const mouthFinished = document.getElementById("mouth-finished");
-    const mouthGroup = document.getElementById("mouth-group");
+/*
+ * Rabbit Animation Script V15 - Interactive Button
+ */
 
-    // State Machine
-    const STATE = {
-        IDLE: "IDLE",
-        MOVING: "MOVING",
-        CHEWING: "CHEWING",
-    };
+const ROWS = 12;
+const COLS = 40;
+const MS_TICK = 120;
 
-    let currentState = STATE.IDLE;
+// Assets
+const RABBIT_SIDE = ["            |)|) ", "           (o )  ", '          /(")(")'];
+const RABBIT_FRONT_IDLE = ["        (\\_/)    ", "        (o..o)   ", '        /(")(")  '];
+const RABBIT_FRONT_EAT = ["        (\\_/)    ", "        (^..^)   ", '        /(")(")  '];
 
-    // Config
-    const ANIMATION_DURATION = 800; // ms for carrot move
-    const CHEW_DURATION = 1000; // ms for chewing cycle
+class RabbitAnimation {
+    constructor(elementId) {
+        this.element = document.getElementById(elementId);
 
-    function setMouth(type) {
-        mouthIdle.style.display = "none";
-        mouthChewing.style.display = "none";
-        mouthFinished.style.display = "none";
+        // State
+        this.S = { IDLE: -1, EMERGE: 0, ENTER: 1, EAT: 2 };
+        this.state = this.S.IDLE; // Start Idle
+        this.tick = 0;
+        this.START_X = 25;
+        this.cx = this.START_X;
+        this.RY = 5;
+        this.GY = 7;
 
-        if (type === "idle") mouthIdle.style.display = "block";
-        if (type === "chewing") mouthChewing.style.display = "block";
-        if (type === "finished") mouthFinished.style.display = "block";
+        // Grid
+        this.cells = [];
+        this.initGrid();
+
+        // Start Loop
+        // Random offset for idle blink? Not needed for now.
+        // We just run loop always to render idle state.
+        setInterval(() => {
+            this.update();
+            this.draw();
+        }, MS_TICK);
     }
 
-    function playChewAnimation() {
-        // Simple manual animation for chewing since SVG paths are different
-        let toggle = false;
-        const interval = setInterval(() => {
-            if (toggle) {
-                mouthGroup.style.transform = "translate(100px, 135px) scaleY(0.7)";
-            } else {
-                mouthGroup.style.transform = "translate(100px, 135px) scaleY(1)";
-            }
-            toggle = !toggle;
-        }, 150);
-
-        return interval;
-    }
-
-    function startSequence() {
-        if (currentState !== STATE.IDLE) return;
-
-        currentState = STATE.MOVING;
-        console.log("State: MOVING");
-
-        // 1. Reset Carrot
-        carrot.style.animation = "none";
-        carrot.offsetHeight; // Trigger reflow
-
-        // 2. Start Carrot Animation
-        // Updated animation timing: total 800ms.
-        // We want it to reach mouth around 70% of that time ~560ms?
-        // Let's use CSS animation definition
-        carrot.style.animation = `carrot-move ${ANIMATION_DURATION}ms linear forwards`;
-
-        // 3. Listen for "reach" moment (approx 70% of animation or based on timeout)
-        // Since CSS is linear 800ms, and we defined 70% as reaching point in CSS
-        const reachTime = ANIMATION_DURATION * 0.7;
-
-        setTimeout(() => {
-            // Carrot reached mouth
-            currentState = STATE.CHEWING;
-            console.log("State: CHEWING");
-
-            // Switch mouth
-            setMouth("chewing");
-
-            // Start chewing motion
-            const chewInterval = playChewAnimation();
-
-            // Wait for chew duration
-            setTimeout(() => {
-                clearInterval(chewInterval);
-                mouthGroup.style.transform = "translate(100px, 135px) scaleY(1)"; // Reset transform
-
-                // Finished state briefly
-                setMouth("finished");
-
-                setTimeout(() => {
-                    // Back to Idle
-                    setMouth("idle");
-                    currentState = STATE.IDLE;
-                    console.log("State: IDLE");
-
-                    // Loop immediately? or wait for user click?
-                    // Spec says "Loop possible"
-                    setTimeout(startSequence, 500); // Loop with delay
-                }, 500);
-            }, CHEW_DURATION);
-        }, reachTime);
-    }
-
-    // Start on click to play sound permissions etc (future proof), or auto start
-    document.addEventListener("click", () => {
-        if (currentState === STATE.IDLE) {
-            startSequence();
+    initGrid() {
+        this.cells = [];
+        for (let r = 0; r < ROWS; r++) {
+            let row = [];
+            for (let c = 0; c < COLS; c++) row.push({ c: " ", l: null });
+            this.cells.push(row);
         }
-    });
+    }
 
-    // Auto start after a moment
-    setTimeout(startSequence, 1000);
+    put(y, x, str, color) {
+        if (y < 0 || y >= ROWS) return;
+        for (let i = 0; i < str.length; i++) {
+            let tx = x + i;
+            if (tx >= 0 && tx < COLS) this.cells[y][tx] = { c: str[i], l: color };
+        }
+    }
+
+    clearGrid() {
+        for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                this.cells[r][c] = { c: " ", l: null };
+            }
+        }
+    }
+
+    render() {
+        return this.cells
+            .map((row) => {
+                let h = "";
+                let lc = null;
+                let ls = "";
+                for (let c = 0; c < row.length; c++) {
+                    let cell = row[c];
+                    if (cell.l !== lc) {
+                        if (ls.length > 0) h += lc ? `<span class="${lc}">${ls}</span>` : ls;
+                        ls = cell.c;
+                        lc = cell.l;
+                    } else {
+                        ls += cell.c;
+                    }
+                }
+                if (ls.length > 0) h += lc ? `<span class="${lc}">${ls}</span>` : ls;
+                return h;
+            })
+            .join("\n");
+    }
+
+    feed() {
+        if (this.state === this.S.IDLE) {
+            this.state = this.S.EMERGE;
+            this.tick = 0;
+            this.cx = this.START_X;
+        }
+    }
+
+    update() {
+        this.tick++;
+        if (this.state === this.S.IDLE) {
+            // Just wait
+        } else if (this.state === this.S.EMERGE) {
+            if (this.tick > 12) {
+                this.state = this.S.ENTER;
+                this.cx = this.START_X;
+            }
+        } else if (this.state === this.S.ENTER) {
+            this.cx -= 1;
+            if (this.cx <= 12) {
+                this.state = this.S.EAT;
+                this.tick = 0;
+            }
+        } else if (this.state === this.S.EAT) {
+            if (this.tick > 24) {
+                this.state = this.S.IDLE; // Go back to IDLE
+                this.tick = 0;
+            }
+        }
+    }
+
+    draw() {
+        this.clearGrid();
+
+        // Draw Rabbit
+        if (this.state === this.S.EAT) {
+            for (let i = 0; i < RABBIT_FRONT_EAT.length; i++) this.put(this.RY + i, 0, RABBIT_FRONT_EAT[i], "c-white");
+
+            let cy = this.RY + 1;
+            let mc = "o";
+            let ml = "c-white";
+
+            if (this.tick <= 8) {
+                this.put(cy, 13, "0", "c-white");
+                this.put(cy, 14, "<", "c-green");
+                this.put(cy, 15, "-", "c-green");
+                mc = "<";
+                ml = "c-orange";
+            } else if (this.tick <= 16) {
+                this.put(cy, 13, "<", "c-green");
+                this.put(cy, 14, "-", "c-green");
+                mc = "o";
+                ml = "c-white";
+            } else {
+                this.put(cy, 13, "-", "c-green");
+                mc = ">";
+                ml = "c-green";
+            }
+
+            if (Math.floor(this.tick / 2) % 2 === 0) {
+                this.put(this.RY + 1, 11, mc, ml);
+                this.put(this.RY + 1, 9, "^", "c-white");
+                this.put(this.RY + 1, 12, "^", "c-white");
+            } else {
+                this.put(this.RY + 1, 9, "-", "c-white");
+                this.put(this.RY + 1, 12, "-", "c-white");
+            }
+        } else {
+            for (let i = 0; i < RABBIT_FRONT_IDLE.length; i++)
+                this.put(this.RY + i, 0, RABBIT_FRONT_IDLE[i], "c-white");
+
+            if (this.state === this.S.ENTER || this.state === this.S.EMERGE) {
+                this.put(this.RY + 1, 10, ".", "c-white");
+                this.put(this.RY + 1, 11, ">", "c-white");
+            }
+        }
+
+        // Draw Carrot
+        let x = Math.floor(this.cx);
+        if (this.state === this.S.EMERGE) {
+            if (this.tick >= 2) {
+                let y = this.GY - (this.tick >= 9 ? 2 : this.tick >= 6 ? 1 : 0);
+                this.put(y, x, "↓", "c-green");
+            }
+            if (this.tick >= 6) {
+                let y = this.GY - (this.tick >= 9 ? 1 : 0);
+                this.put(y, x, "o", "c-white");
+            }
+            if (this.tick >= 9) this.put(this.GY, x, "V", "c-orange");
+        } else if (this.state === this.S.ENTER) {
+            this.put(this.GY, x, "<", "c-orange");
+            this.put(this.GY, x + 1, "0", "c-white");
+            this.put(this.GY, x + 2, "<", "c-green");
+            this.put(this.GY, x + 3, "-", "c-green");
+        }
+
+        this.element.innerHTML = this.render();
+    }
+}
+
+// Instantiate
+const r1 = new RabbitAnimation("stage-left");
+const r2 = new RabbitAnimation("stage-center");
+const r3 = new RabbitAnimation("stage-right");
+
+// Button Control
+const btn = document.getElementById("feed-btn");
+btn.addEventListener("click", () => {
+    // Add small random delays for natural feel
+    setTimeout(() => r1.feed(), 0);
+    setTimeout(() => r2.feed(), 200);
+    setTimeout(() => r3.feed(), 400);
 });

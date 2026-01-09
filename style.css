@@ -1,8 +1,8 @@
 :root {
     --bg-color: #000;
-    --rabbit-stroke: #fff;
-    --rabbit-fill: #111;
-    --accent-color: #ff69b4;
+    --text-color: #fff;
+    --green-color: #4ade80;
+    --orange-color: #fb923c;
 }
 
 body {
@@ -12,113 +12,84 @@ body {
     justify-content: center;
     align-items: center;
     background-color: var(--bg-color);
-    font-family: "Inter", sans-serif;
+    color: var(--text-color);
     overflow: hidden;
-    color: white;
 }
 
 .container {
-    position: relative;
-    width: 300px;
-    height: 400px;
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* Stack rabbits and button */
     align-items: center;
+    gap: 30px;
+    width: 100%;
 }
 
-/* Rabbit SVG Styles */
-#rabbit {
-    width: 200px;
-    height: 200px;
-    z-index: 2;
+.rabbit-farm {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    width: 100%;
+    max-width: 1400px;
 }
 
-.head,
-.ear {
-    fill: var(--rabbit-fill);
-    stroke: var(--rabbit-stroke);
-    stroke-width: 3;
+.rabbit-stage {
+    font-family: "Courier New", Courier, monospace;
+    white-space: pre;
+    line-height: 1.2;
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: left;
+    background-color: transparent;
+    border: none;
+    padding: 10px;
 }
 
-.eye {
-    fill: var(--rabbit-stroke);
+#feed-btn {
+    background: linear-gradient(45deg, var(--green-color), var(--orange-color));
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: white;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(251, 146, 60, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-family: inherit;
 }
 
-#mouth-group path {
-    stroke: var(--rabbit-stroke);
-}
-
-/* Carrot Styles */
-#carrot-container {
-    position: absolute;
-    bottom: 50px; /* Start position below the mouth */
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 3; /* Ideally appearing to go 'into' the mouth, might need z-index adjustments or masking */
-}
-
-#carrot {
-    font-size: 40px;
-    user-select: none;
-    opacity: 0; /* Hidden by default until animation starts */
-}
-
-/* Animations */
-@keyframes carrot-move {
-    0% {
-        transform: translateY(100px) scale(0.8);
-        opacity: 0;
-    }
-    10% {
-        opacity: 1;
-    }
-    70% {
-        transform: translateY(-80px) scale(1); /* Target mouth position relative to container start */
-        opacity: 1;
-    }
-    75% {
-        opacity: 0; /* Disappear into mouth */
-    }
-    100% {
-        transform: translateY(-80px);
-        opacity: 0;
-    }
-}
-
-/* Chewing Animation Class */
-.chewing #head {
-    animation: bounce 0.3s infinite alternate;
-}
-
-@keyframes chew-scale {
-    0% {
-        transform: scaleY(1);
-    }
-    50% {
-        transform: scaleY(0.7);
-    }
-    100% {
-        transform: scaleY(1);
-    }
-}
-
-.controls {
-    margin-top: 50px;
-    opacity: 0.5;
-    font-size: 0.8rem;
-    pointer-events: none;
-}
-
-/* Premium Glow Effect */
-#rabbit {
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
-}
-
-.ear,
-.head {
-    transition: all 0.3s ease;
-}
-
-.active .ear {
+#feed-btn:hover {
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(251, 146, 60, 0.6);
+}
+
+#feed-btn:active {
+    transform: translateY(1px);
+}
+
+/* Color Classes */
+.c-green {
+    color: var(--green-color);
+}
+.c-orange {
+    color: var(--orange-color);
+}
+.c-white {
+    color: #fff;
+}
+
+@media (max-width: 1024px) {
+    .rabbit-farm {
+        gap: 10px;
+    }
+    .rabbit-stage {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    #stage-left,
+    #stage-right {
+        display: none;
+    }
 }
